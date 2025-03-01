@@ -192,6 +192,7 @@ $.TiledImage = function( options ) {
         subPixelRoundingForTransparency:   $.DEFAULT_SETTINGS.subPixelRoundingForTransparency,
         maxTilesPerFrame:                  $.DEFAULT_SETTINGS.maxTilesPerFrame,
         overloadPercentage:                $.DEFAULT_SETTINGS.overloadPercentage,
+        singleLevelLoad:                   $.DEFAULT_SETTINGS.singleLevelLoad,
         _currentMaxTilesPerFrame:          (options.maxTilesPerFrame || $.DEFAULT_SETTINGS.maxTilesPerFrame) * 10
     }, options );
 
@@ -1415,6 +1416,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         // Once a level fully covers the viewport the loop is halted and
         // lower-resolution levels are skipped
         let useLevel = false;
+        let skipLoad = false;
         for (let i = 0; i < levelList.length; i++) {
             let level = levelList[i];
 
@@ -1460,7 +1462,8 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 drawArea,
                 loadArea,
                 currentTime,
-                bestTiles
+                bestTiles,
+                skipLoad && level > 2
             );
 
             bestTiles = result.bestTiles;
@@ -1482,6 +1485,9 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             // already drawn tiles
             if (this._providesCoverage(this.coverage, level)) {
                 break;
+            }
+            if (this.singleLevelLoad) {
+                skipLoad = true;
             }
         }
 
@@ -1617,7 +1623,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
      * @returns {Object} Dictionary {bestTiles: OpenSeadragon.Tile - the current "best" tiles to draw, updatedTiles: OpenSeadragon.Tile) - the updated tiles}.
      */
     _updateLevel: function(level, levelOpacity,
-                            levelVisibility, drawArea, loadArea, currentTime, best) {
+                            levelVisibility, drawArea, loadArea, currentTime, best, skipLoad) {
 
         var drawTopLeftBound = drawArea.getBoundingBox().getTopLeft();
         var drawBottomRightBound = drawArea.getBoundingBox().getBottomRight();
@@ -1658,10 +1664,12 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         var updatedTiles = this._updateDrawArea(level,
             levelVisibility, drawArea, currentTime);
 
-        var bestTiles = this._updateLoadArea(level, loadArea, currentTime, best);
+        if (!skipLoad) {
+            best = this._updateLoadArea(level, loadArea, currentTime, best);
+        }
 
         return {
-            bestTiles: bestTiles,
+            bestTiles: best,
             updatedTiles: updatedTiles
         };
     },
