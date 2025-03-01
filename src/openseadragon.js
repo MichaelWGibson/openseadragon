@@ -525,6 +525,9 @@
   * @property {Number} [tileRetryDelay=2500]
   *     Milliseconds to wait after each tile retry if tileRetryMax is set.
   *
+  * @property {Number} [overloadPercentage=0]
+  *     The additional area, expressed as a percentage of the viewport area, to load use in tile loading calculations.
+  *
   * @property {Boolean} [useCanvas=true]
   *     Deprecated. Use the `drawer` option to specify preferred renderer.
   *
@@ -1445,6 +1448,7 @@ function OpenSeadragon( options ){
             timeout:                30000,
             tileRetryMax:           0,
             tileRetryDelay:         2500,
+            overloadPercentage:     0,
 
             //INTERFACE RESOURCE SETTINGS
             prefixUrl:              "/images/",
