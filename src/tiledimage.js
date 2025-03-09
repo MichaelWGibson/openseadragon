@@ -1495,8 +1495,8 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
         }
 
-        const requiredTiles = bestTiles.filter(tile => (tile.level === targetLevel || tile.level < 2) && loadArea.intersection(tile.bounds) !== null);
-        const optimisticTiles = bestTiles.filter(tile => (tile.level !== targetLevel && tile.level > 2) || loadArea.intersection(tile.bounds) === null);
+        const requiredTiles = bestTiles.filter(tile => (tile.level === targetLevel || tile.level < 3) && loadArea.intersection(tile.bounds) !== null);
+        const optimisticTiles = bestTiles.filter(tile => (tile.level !== targetLevel && tile.level > 3) || loadArea.intersection(tile.bounds) === null);
 
         const allRequiredLoaded = requiredTiles.every(tile => tile.loaded);
         const pendingRequiredTiles = requiredTiles.filter(tile => !tile.loading && !tile.loaded);
