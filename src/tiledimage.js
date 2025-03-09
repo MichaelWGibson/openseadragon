@@ -1106,8 +1106,8 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
 
         loadArea.x = Math.max(loadArea.x, 0);
         loadArea.y = Math.max(loadArea.y, 0);
-        loadArea.width = Math.min(loadArea.width, 1 - loadArea.x);
-        loadArea.height = Math.min(loadArea.height, 1 - loadArea.y);
+        loadArea.x = Math.min(loadArea.x, loadArea.x - loadArea.width);
+        loadArea.y = Math.min(loadArea.y, loadArea.y - loadArea.height);
 
         return loadArea;
     },
