@@ -1103,6 +1103,12 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         loadArea.y -= yAdd;
         loadArea.width += 2 * xAdd;
         loadArea.height += 2 * yAdd;
+
+        loadArea.x = Math.max(loadArea.x, 0);
+        loadArea.y = Math.max(loadArea.y, 0);
+        loadArea.width = Math.min(loadArea.width, 1 - loadArea.x);
+        loadArea.height = Math.min(loadArea.height, 1 - loadArea.y);
+
         return loadArea;
     },
 
@@ -1505,10 +1511,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         this._sortTiles(pendingRequiredTiles);
 
 
-        console.log("pendingRequiredTiles", pendingRequiredTiles.length, "pendingOptimisticTiles", pendingOptimisticTiles.length);
-
         if (pendingRequiredTiles && pendingRequiredTiles.length > 0) {
-            console.log("loading required tiles");
             const tilesToLoad = pendingRequiredTiles.slice(0, this.maxTilesPerFrame);
             for (let tile of tilesToLoad) {
                 this._loadTile(tile, currentTime);
