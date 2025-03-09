@@ -378,6 +378,7 @@ $.TileSource.prototype = {
     getTileAtPoint: function(level, point) {
         var validPoint = point.x >= 0 && point.x <= 1 &&
             point.y >= 0 && point.y <= 1 / this.aspectRatio;
+            console.log("point", point, this.aspectRatio);
         $.console.assert(validPoint, "[TileSource.getTileAtPoint] must be called with a valid point.");
 
 
