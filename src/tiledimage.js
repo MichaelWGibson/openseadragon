@@ -1092,6 +1092,20 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         return drawArea;
     },
 
+    getExpandedLoadArea: function(expandByPercent) {
+        var viewport = this.viewport;
+        var bounds = viewport.getBounds(false);
+        var loadArea = bounds.getBoundingBox();
+
+        var xAdd = loadArea.width * (expandByPercent / 100);
+        var yAdd = loadArea.height * (expandByPercent / 100);
+        loadArea.x -= xAdd;
+        loadArea.y -= yAdd;
+        loadArea.width += 2 * xAdd;
+        loadArea.height += 2 * yAdd;
+        return loadArea;
+    },
+
     /**
      *
      * @returns {Array} Array of Tiles that make up the current view
@@ -1360,6 +1374,9 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         if (this.loadDestinationTilesOnAnimation) {
           loadArea = this.getLoadArea();
         }
+
+        var expandedLoadArea = this.getExpandedLoadArea(15);
+
         var currentTime = $.now();
 
         // reset each tile's beingDrawn flag
@@ -1398,6 +1415,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
         }
 
+        let targetLevel = null;
 
         // Update any level that will be drawn.
         // We are iterating from highest resolution to lowest resolution
@@ -1416,6 +1434,9 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             // but always use the last level in the list so we draw something
             if (i === levelList.length - 1 || currentRenderPixelRatio >= this.minPixelRatio ) {
                 useLevel = true;
+                if (!targetLevel) {
+                    targetLevel = level;
+                }
             } else if (!useLevel) {
                 continue;
             }
@@ -1447,7 +1468,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 levelOpacity,
                 levelVisibility,
                 drawArea,
-                loadArea,
+                expandedLoadArea,
                 currentTime,
                 bestTiles
             );
@@ -1474,19 +1495,33 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
         }
 
+        const requiredTiles = bestTiles.filter(tile => (tile.level === targetLevel || tile.level < 2) && loadArea.intersection(tile.bounds) !== null);
+        const optimisticTiles = bestTiles.filter(tile => (tile.level !== targetLevel && tile.level > 2) || loadArea.intersection(tile.bounds) === null);
 
-        // Load the new 'best' n tiles
-        if (bestTiles && bestTiles.length > 0) {
-            for (let tile of bestTiles) {
-                if (tile) {
-                    this._loadTile(tile, currentTime);
-                }
+        const allRequiredLoaded = requiredTiles.every(tile => tile.loaded);
+        const pendingRequiredTiles = requiredTiles.filter(tile => !tile.loading && !tile.loaded);
+        const pendingOptimisticTiles = optimisticTiles.filter(tile => !tile.loading && !tile.loaded);
+
+        this._sortTiles(pendingRequiredTiles);
+
+
+        console.log("pendingRequiredTiles", pendingRequiredTiles.length, "pendingOptimisticTiles", pendingOptimisticTiles.length);
+
+        if (pendingRequiredTiles && pendingRequiredTiles.length > 0) {
+            console.log("loading required tiles");
+            const tilesToLoad = pendingRequiredTiles.slice(0, this.maxTilesPerFrame);
+            for (let tile of tilesToLoad) {
+                this._loadTile(tile, currentTime);
             }
             this._needsDraw = true;
-            return false;
-        } else {
-            return this._tilesLoading === 0;
+        } else if (allRequiredLoaded && pendingOptimisticTiles && pendingOptimisticTiles.length > 0) {
+            const tilesToLoad = pendingOptimisticTiles.slice(0, this.maxTilesPerFrame);
+            for (let tile of tilesToLoad) {
+                this._loadTile(tile, currentTime);
+            }
         }
+
+        return allRequiredLoaded && pendingOptimisticTiles.length === 0;
     },
 
     /**
@@ -1927,13 +1962,9 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         if ( tile.loading ) {
             // the tile is already in the download queue
             this._tilesLoading++;
-        } else if (!loadingCoverage) {
-            // add tile to best tiles to load only when not loaded already
-            best = this._compareTiles( best, tile, this._currentMaxTilesPerFrame );
-            if (this._currentMaxTilesPerFrame > this.maxTilesPerFrame) {
-                this._currentMaxTilesPerFrame = Math.max(Math.ceil(this.maxTilesPerFrame / 2), this.maxTilesPerFrame);
-            }
         }
+
+        best.push(tile);
 
         return best;
     },
@@ -2330,10 +2361,6 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             return [tile];
         }
         previousBest.push(tile);
-        this._sortTiles(previousBest);
-        if (previousBest.length > maxNTiles) {
-            previousBest.pop();
-        }
         return previousBest;
     },
 
