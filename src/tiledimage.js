@@ -1086,16 +1086,21 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
     },
 
     getLoadArea: function() {
-        var viewport = this.viewport;
-        var bounds = viewport.getBounds(false);
-        var drawArea = bounds.getBoundingBox();
-        return drawArea;
+        var loadArea = this._viewportToTiledImageRectangle(
+            this.viewport.getBoundsWithMargins(false));
+
+        if (!this.wrapHorizontal && !this.wrapVertical) {
+            var tiledImageBounds = this._viewportToTiledImageRectangle(
+            this.getClippedBounds(false));
+            loadArea = loadArea.intersection(tiledImageBounds);
+        }
+
+        return loadArea;
     },
 
     getExpandedLoadArea: function(expandByPercent) {
-        var viewport = this.viewport;
-        var bounds = viewport.getBounds(false);
-        var loadArea = bounds.getBoundingBox();
+        var loadArea = this._viewportToTiledImageRectangle(
+            this.viewport.getBoundsWithMargins(false));
 
         var xAdd = loadArea.width * (expandByPercent / 100);
         var yAdd = loadArea.height * (expandByPercent / 100);
@@ -1104,10 +1109,11 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         loadArea.width += 2 * xAdd;
         loadArea.height += 2 * yAdd;
 
-        loadArea.x = Math.max(loadArea.x, 0);
-        loadArea.y = Math.max(loadArea.y, 0);
-        loadArea.x = Math.min(loadArea.x, loadArea.x - loadArea.width);
-        loadArea.y = Math.min(loadArea.y, loadArea.y - loadArea.height);
+        if (!this.wrapHorizontal && !this.wrapVertical) {
+            var tiledImageBounds = this._viewportToTiledImageRectangle(
+            this.getClippedBounds(false));
+            loadArea = loadArea.intersection(tiledImageBounds);
+        }
 
         return loadArea;
     },
@@ -1380,6 +1386,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         if (this.loadDestinationTilesOnAnimation) {
           loadArea = this.getLoadArea();
         }
+        console.log("loadArea", loadArea);
 
         var expandedLoadArea = this.getExpandedLoadArea(15);
         console.log("expandedLoadArea", expandedLoadArea);
@@ -1686,10 +1693,12 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         var updatedTiles = this._updateDrawArea(level,
             levelVisibility, drawArea, currentTime);
 
-        var bestTiles = this._updateLoadArea(level, loadArea, currentTime, best);
+        if (loadArea) {
+            best = this._updateLoadArea(level, loadArea, currentTime, best);
+        }
 
         return {
-            bestTiles: bestTiles,
+            bestTiles: best,
             updatedTiles: updatedTiles
         };
     },
