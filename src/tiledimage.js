@@ -1382,6 +1382,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
 
         var expandedLoadArea = this.getExpandedLoadArea(15);
+        console.log("expandedLoadArea", expandedLoadArea);
 
         var currentTime = $.now();
 
