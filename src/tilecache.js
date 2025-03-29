@@ -198,7 +198,7 @@
             // unable to provide the rendering data immediatelly - return.
             const supportedTypes = drawer.getSupportedDataFormats();
             if (!supportedTypes.includes(this.type)) {
-                $.console.error("Attempt to draw tile with unsupported target drawer type!");
+                $.console.error("Attempt to draw tile with unsupported target drawer type!", this.type);
                 this.prepareForRendering(drawer);
                 return undefined;
             }
