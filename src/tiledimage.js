@@ -191,6 +191,7 @@ $.TiledImage = function( options ) {
         compositeOperation:                $.DEFAULT_SETTINGS.compositeOperation,
         subPixelRoundingForTransparency:   $.DEFAULT_SETTINGS.subPixelRoundingForTransparency,
         maxTilesPerFrame:                  $.DEFAULT_SETTINGS.maxTilesPerFrame,
+        overloadPercentage:                $.DEFAULT_SETTINGS.overloadPercentage,
         _currentMaxTilesPerFrame:          (options.maxTilesPerFrame || $.DEFAULT_SETTINGS.maxTilesPerFrame) * 10
     }, options );
 
@@ -1366,6 +1367,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         if (this.loadDestinationTilesOnAnimation) {
           loadArea = this.getLoadArea();
         }
+
+        if (loadArea && this.overloadPercentage) {
+            var xAdd = loadArea.width * (this.overloadPercentage / 100);
+            var yAdd = loadArea.height * (this.overloadPercentage / 100);
+            loadArea.x -= xAdd;
+            loadArea.y -= yAdd;
+            loadArea.width += 2 * xAdd;
+            loadArea.height += 2 * yAdd;
+        }
+
         var currentTime = $.now();
 
         // reset each tile's beingDrawn flag
