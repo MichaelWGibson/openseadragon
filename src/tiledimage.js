@@ -1410,7 +1410,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         for (let i = 0; i <= 4; i++) {
             const count  = this.source.getNumTiles(i);
             this._visitTiles(i, this.getBoundsNoRotate(), function(tiledImage, x, y, total) {
-                const tile = this._getTile(
+                const tile = tiledImage._getTile(
                     x, y,
                     i,
                     currentTime,
