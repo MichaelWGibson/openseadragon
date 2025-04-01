@@ -1422,6 +1422,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 }
             });
         }
+        console.log("preloadTiles", preloadTiles);
 
 
         // Update any level that will be drawn.
