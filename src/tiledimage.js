@@ -1407,7 +1407,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
 
         let preloadTiles = [];
-        for (let i = 0; i <= 5; i++) {
+        for (let i = 0; i <= 6; i++) {
             const count  = this.source.getNumTiles(i);
             this._visitTiles(i, this.getBoundsNoRotate(), function(tiledImage, x, y, total) {
                 const tile = tiledImage._getTile(
