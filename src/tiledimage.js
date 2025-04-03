@@ -1413,7 +1413,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             for (let x = 0; x < numTiles.x; x++) {
                 for (let y = 0; y < numTiles.y; y++) {
                     count += 1;
-                    if (count > 200) {
+                    if (count <= 200) {
                         const tile = this._getTile(
                             x, y,
                             i,
