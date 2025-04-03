@@ -1501,7 +1501,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
 
         if (!bestTiles.length && preloadTiles.length) {
-            bestTiles = preloadTiles.slice(0, this.maxTilesPerFrame);
+            bestTiles = preloadTiles.slice(0, 1);
         }
 
 
