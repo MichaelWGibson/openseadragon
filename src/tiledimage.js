@@ -1406,7 +1406,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
         }
 
-        let preloadTiles = [];
+        let rawPreloadTiles = [];
         for (let i = 0; i <= 6; i++) {
             const count  = this.source.getNumTiles(i);
             this._visitTiles(i, this.getBoundsNoRotate(), function(tiledImage, x, y, total) {
@@ -1418,11 +1418,14 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 );
 
                 if (!tile.loading && !tile.loaded) {
-                    preloadTiles.push(tile);
+                    rawPreloadTiles.push(tile);
                 }
             });
+            if (rawPreloadTiles.length > 200) {
+                break;
+            }
         }
-        console.log("preloadTiles", preloadTiles);
+        let preloadTiles = rawPreloadTiles.slice(0, 200);
 
 
         // Update any level that will be drawn.
