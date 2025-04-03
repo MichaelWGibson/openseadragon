@@ -1428,11 +1428,11 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                         }
                     }
                 }
-                if (count > 200) {
+                if (count >= 200) {
                     break;
                 }
             }
-            if (count > 200) {
+            if (count >= 200) {
                 break;
             }
         }
