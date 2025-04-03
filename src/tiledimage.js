@@ -1406,30 +1406,36 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
         }
 
-        let rawPreloadTiles = [];
+        let preloadTiles = [];
+        let count = 0;
         for (let i = 0; i <= 6; i++) {
             const numTiles  = this.source.getNumTiles(i);
             for (let x = 0; x < numTiles.x; x++) {
                 for (let y = 0; y < numTiles.y; y++) {
-                    const tile = this._getTile(
-                        x, y,
-                        i,
-                        currentTime,
-                        numTiles
-                    );
-                    if (!tile.loading && !tile.loaded) {
-                        rawPreloadTiles.push(tile);
-                    }
-                    if (tile.loading) {
-                        this._tilesLoading++;
+                    count += 1;
+                    if (count > 200) {
+                        const tile = this._getTile(
+                            x, y,
+                            i,
+                            currentTime,
+                            numTiles
+                        );
+                        if (!tile.loading && !tile.loaded) {
+                            preloadTiles.push(tile);
+                        }
+                        if (tile.loading) {
+                            this._tilesLoading++;
+                        }
                     }
                 }
+                if (count > 200) {
+                    break;
+                }
             }
-            if (rawPreloadTiles.length > 200) {
+            if (count > 200) {
                 break;
             }
         }
-        let preloadTiles = rawPreloadTiles.slice(0, 200);
 
 
         // Update any level that will be drawn.
