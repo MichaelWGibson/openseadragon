@@ -1503,6 +1503,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
         }
 
+        console.log(this._tilesLoading, bestTiles.length, preloadTiles.length);
         if (!bestTiles.length && preloadTiles.length) {
             if (this._tilesLoading === 0) {
                 let tile = preloadTiles.pop();
