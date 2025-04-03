@@ -1408,23 +1408,23 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
 
         let rawPreloadTiles = [];
         for (let i = 0; i <= 6; i++) {
-            const count  = this.source.getNumTiles(i);
-            this._visitTiles(i, this.getBoundsNoRotate(), function(tiledImage, x, y, total) {
-                const tile = tiledImage._getTile(
-                    x, y,
-                    i,
-                    currentTime,
-                    count
-                );
-
-                if (!tile.loading && !tile.loaded) {
-                    rawPreloadTiles.push(tile);
+            const numTiles  = this.source.getNumTiles(i);
+            for (let x = 0; x < numTiles.x; x++) {
+                for (let y = 0; y < numTiles.y; y++) {
+                    const tile = this._getTile(
+                        x, y,
+                        i,
+                        currentTime,
+                        numTiles
+                    );
+                    if (!tile.loading && !tile.loaded) {
+                        rawPreloadTiles.push(tile);
+                    }
+                    if (tile.loading) {
+                        this._tilesLoading++;
+                    }
                 }
-
-                if (tile.loading) {
-                    tiledImage._tilesLoading++;
-                }
-            });
+            }
             if (rawPreloadTiles.length > 200) {
                 break;
             }
@@ -1510,7 +1510,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         console.log(this._tilesLoading, bestTiles.length, preloadTiles.length);
         if (!bestTiles.length && preloadTiles.length) {
             if (this._tilesLoading === 0) {
-                let tile = preloadTiles.pop();
+                let tile = preloadTiles[0];
                 this._loadTile(tile, currentTime);
             }
             return false;
