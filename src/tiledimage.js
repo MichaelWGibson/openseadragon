@@ -1420,6 +1420,10 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 if (!tile.loading && !tile.loaded) {
                     rawPreloadTiles.push(tile);
                 }
+
+                if (tile.loading) {
+                    tiledImage._tilesLoading++;
+                }
             });
             if (rawPreloadTiles.length > 200) {
                 break;
