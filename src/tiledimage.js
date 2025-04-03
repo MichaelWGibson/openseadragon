@@ -1501,7 +1501,11 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
 
         if (!bestTiles.length && preloadTiles.length) {
-            bestTiles = preloadTiles.slice(0, 1);
+            if (this._tilesLoading === 0) {
+                bestTiles = preloadTiles.slice(0, 1);
+            } else {
+                return false;
+            }
         }
 
 
