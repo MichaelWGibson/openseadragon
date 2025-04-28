@@ -83,6 +83,7 @@
  *      Defaults to the setting in {@link OpenSeadragon.Options}.
  * @param {Object} [options.ajaxHeaders={}]
  *      A set of headers to include when making tile AJAX requests.
+ * @param {Number} [options.preloadToLevel] - See {@link OpenSeadragon.Options}.
  */
 $.TiledImage = function( options ) {
     this._initialized = false;
@@ -188,6 +189,7 @@ $.TiledImage = function( options ) {
         placeholderFillStyle:              $.DEFAULT_SETTINGS.placeholderFillStyle,
         opacity:                           $.DEFAULT_SETTINGS.opacity,
         preload:                           $.DEFAULT_SETTINGS.preload,
+        preloadToLevel:                    $.DEFAULT_SETTINGS.preloadToLevel,
         compositeOperation:                $.DEFAULT_SETTINGS.compositeOperation,
         subPixelRoundingForTransparency:   $.DEFAULT_SETTINGS.subPixelRoundingForTransparency,
         maxTilesPerFrame:                  $.DEFAULT_SETTINGS.maxTilesPerFrame,
@@ -1404,6 +1406,37 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
         }
 
+        let preloadTiles = [];
+        let count = 0;
+        for (let i = 0; i <= 6; i++) {
+            const numTiles  = this.source.getNumTiles(i);
+            for (let x = 0; x < numTiles.x; x++) {
+                for (let y = 0; y < numTiles.y; y++) {
+                    count += 1;
+                    if (count <= 200) {
+                        const tile = this._getTile(
+                            x, y,
+                            i,
+                            currentTime,
+                            numTiles
+                        );
+                        if (!tile.loading && !tile.loaded) {
+                            preloadTiles.push(tile);
+                        }
+                        if (tile.loading) {
+                            this._tilesLoading++;
+                        }
+                    }
+                }
+                if (count >= 200) {
+                    break;
+                }
+            }
+            if (count >= 200) {
+                break;
+            }
+        }
+
 
         // Update any level that will be drawn.
         // We are iterating from highest resolution to lowest resolution
@@ -1478,6 +1511,15 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             if (this._providesCoverage(this.coverage, level)) {
                 break;
             }
+        }
+
+        console.log(this._tilesLoading, bestTiles.length, preloadTiles.length);
+        if (!bestTiles.length && preloadTiles.length) {
+            if (this._tilesLoading === 0) {
+                let tile = preloadTiles[0];
+                this._loadTile(tile, currentTime);
+            }
+            return false;
         }
 
 
